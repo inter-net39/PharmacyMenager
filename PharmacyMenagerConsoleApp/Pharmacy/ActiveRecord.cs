@@ -7,8 +7,8 @@ namespace Pharmacy
     public abstract class ActiveRecord
     {
         protected SqlConnection _connection;
-        public event Action<string> OnActionDone;
-        public event Action<string> OnBadActionDone;
+        public event Action<string> OnCloseAction;
+        public event Action<string> OnCloseActionERR;
 
         public int ID { get; }
         /// <summary>
@@ -49,11 +49,11 @@ namespace Pharmacy
                     ConnectionString = @"Data Source=(local)\SQLEXPRESS;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False",
                 };
                 _connection.Open();
-                OnActionDone?.Invoke("Połączono z bazą danych");
+                OnCloseAction?.Invoke("Połączono z bazą danych");
             }
             else
             {
-                OnBadActionDone?.Invoke("AlreadyOpenedDBConnectionExeption: Jesteś już połączony z bazą danych.");
+                OnCloseActionERR?.Invoke("AlreadyOpenedDBConnectionExeption: Jesteś już połączony z bazą danych.");
                 throw new AlreadyOpenedDBConnectionExeption("Jesteś już połączony z bazą danych.");
             }
 
@@ -65,14 +65,15 @@ namespace Pharmacy
             {
                 _connection.Close();
                 _connection = null;
-                OnActionDone?.Invoke("Zamknięto połączenie z bazą danych");
+                OnCloseAction?.Invoke("Zamknięto połączenie z bazą danych");
             }
             else
             {
-                OnBadActionDone?.Invoke("NotOpenedDBConnectionException: Baza danych nie jest otwarta.");
+                OnCloseActionERR?.Invoke("NotOpenedDBConnectionException: Baza danych nie jest otwarta.");
                 throw new NotOpenedDBConnectionException("Baza danych nie jest otwarta.");
             }
         }
+
         /// <summary>
         /// Metoda Remove powinna usuwać encję o
         /// podanym identyfikatorze z bazy danych.

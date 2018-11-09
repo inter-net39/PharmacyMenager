@@ -4,6 +4,10 @@ namespace Pharmacy
 {
     public class Prescription : ActiveRecord
     {
+        public Prescription()
+        {
+            new LogHandler(this);
+        }
         public override void Save()
         {
             throw new NotImplementedException();

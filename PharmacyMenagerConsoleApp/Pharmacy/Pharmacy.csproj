@@ -45,7 +45,7 @@
   <ItemGroup>
     <Compile Include="ActiveRecord.cs" />
     <Compile Include="AlreadyOpenedDBConnectionExeption.cs" />
-    <Compile Include="LogManager.cs" />
+    <Compile Include="LogHandler.cs" />
     <Compile Include="NotOpenedDBConnectionException.cs" />
     <Compile Include="Medicine.cs" />
     <Compile Include="Order.cs" />
