@@ -43,6 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActiveRecord.cs" />
+    <Compile Include="AlreadyOpenedDBConnectionExeption.cs" />
+    <Compile Include="LogManager.cs" />
+    <Compile Include="NotOpenedDBConnectionException.cs" />
+    <Compile Include="Medicine.cs" />
+    <Compile Include="Order.cs" />
+    <Compile Include="Prescription.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
