@@ -15,16 +15,22 @@ namespace Pharmacy
                 {
                     (sender as Order).OnCloseAction += AddLogSucces;
                     (sender as Order).OnCloseActionERR += AddLoggFail;
+                    (sender as Order).OnFailAction += AddLoggFail;
+                    (sender as Order).OnSuccesAction += AddLogSucces;
                 }
                 else if (sender is Medicine)
                 {
                     (sender as Medicine).OnCloseAction += AddLogSucces;
                     (sender as Medicine).OnCloseActionERR += AddLoggFail;
+                    (sender as Medicine).OnFailAction += AddLoggFail;
+                    (sender as Medicine).OnSuccesAction += AddLogSucces;
                 }
                 else if (sender is Prescription)
                 {
                     (sender as Prescription).OnCloseAction += AddLogSucces;
                     (sender as Prescription).OnCloseActionERR += AddLoggFail;
+                    (sender as Prescription).OnFailAction += AddLoggFail;
+                    (sender as Prescription).OnSuccesAction += AddLogSucces;
                 }
                 else
                 {

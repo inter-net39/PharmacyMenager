@@ -9,8 +9,10 @@ namespace Pharmacy
         protected SqlConnection _connection;
         public event Action<string> OnCloseAction;
         public event Action<string> OnCloseActionERR;
+        public abstract event Action<string> OnSuccesAction;
+        public abstract event Action<string> OnFailAction;
 
-        public int ID { get; }
+        public int ID { get; protected set; }
         /// <summary>
         /// Metoda Save w klasach dziedziczących po klasie
         /// ActiveRecord musi zapisywać dane obiektu, na

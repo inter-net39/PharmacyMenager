@@ -1,27 +1,225 @@
 ﻿using System;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace Pharmacy
 {
     public class Medicine : ActiveRecord
     {
-        public Medicine()
+        private string _name;
+        private string _manufacturer;
+        private decimal _price;
+        private int _amount;
+        private bool _withPrescription;
+
+        public Medicine(int id, string name, string manufacturer, decimal price, int amount, bool withPrescription)
         {
+            ID = id;
+            _name = name;
+            _manufacturer = manufacturer;
+            _price = price;
+            _amount = amount;
+            _withPrescription = withPrescription;
             new LogHandler(this);
         }
 
+        public override event Action<string> OnSuccesAction;
+        public override event Action<string> OnFailAction;
+
         public override void Save()
         {
-            throw new NotImplementedException();
+            Open();
+
+            if (ID == 0) //Dodaj nowy rekord.
+            {
+                AddNewRow();
+            }
+            else
+            {
+                //TODO 1: Modyfikacja
+                //TODO 2: if ID not exist in DB
+            }
+        }
+
+        private void AddNewRow()
+        {
+            SqlTransaction transaction = _connection.BeginTransaction();
+
+            SqlCommand cmd = new SqlCommand()
+            {
+                CommandText = "INSERT INTO [MyPharmacyDB].[dbo].[Medicines] ( [Name], [Manufacturer], [Price], [Amount], [WithPrescription])" +
+                              "VALUES( @Name, @Manufacturer, @Price, @Amount ,@WithPrescription);" +
+                              "SELECT SCOPE_IDENTITY(); ",
+                CommandType = CommandType.Text,
+                Connection = _connection,
+                Transaction = transaction
+            };
+
+
+            SqlParameter Name = new SqlParameter()
+            {
+                ParameterName = "@Name",
+                Value = _name,
+                DbType = DbType.String
+            };
+            SqlParameter Manufacturer = new SqlParameter()
+            {
+                ParameterName = "@Manufacturer",
+                Value = _manufacturer,
+                DbType = DbType.String
+            };
+            SqlParameter Price = new SqlParameter()
+            {
+                ParameterName = "@Price",
+                Value = _price,
+                DbType = DbType.Decimal
+            };
+            SqlParameter Amount = new SqlParameter()
+            {
+                ParameterName = "@Amount",
+                Value = _amount,
+                DbType = DbType.Int32
+            };
+            SqlParameter WithPrescription = new SqlParameter()
+            {
+                ParameterName = "@WithPrescription",
+                Value = _withPrescription,
+                DbType = DbType.Boolean
+            };
+
+            cmd.Parameters.Add(Name);
+            cmd.Parameters.Add(Manufacturer);
+            cmd.Parameters.Add(Price);
+            cmd.Parameters.Add(Amount);
+            cmd.Parameters.Add(WithPrescription);
+
+            try
+            {
+                cmd.ExecuteNonQuery();
+                ID = Convert.ToInt32(cmd.ExecuteScalar());
+
+                transaction.Commit();
+                OnSuccesAction?.Invoke($"[Medicines] - Pomyślnie dodano rekord. ID = {ID}");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message, ex.StackTrace);
+                transaction.Rollback();
+            }
+            finally
+            {
+                Close();
+            }
         }
 
         public override void Reload()
         {
-            throw new NotImplementedException();
+            /*        private string _name;
+               private string _manufacturer;
+               private decimal _price;
+               private int _amount;
+               private bool _withPrescription;
+               */
+
+
+
+            Open();
+            SqlCommand cmd = new SqlCommand()
+            {
+                CommandText = "SELECT *" +
+                              "FROM [MyPharmacyDB].[dbo].[Medicines]" +
+                              "WHERE [ID] = @id",
+                CommandType = CommandType.Text,
+                Connection = _connection,
+            };
+
+            SqlParameter para1 = new SqlParameter()
+            {
+                ParameterName = "@id",
+                Value = ID,
+                DbType = DbType.Int32
+            };
+
+            cmd.Parameters.Add(para1);
+
+            try
+            {
+
+                using (SqlDataReader sqlReader = cmd.ExecuteReader())
+                {
+                    if (sqlReader.HasRows)
+                    {
+                        while (sqlReader.Read())
+                        {
+                            if (sqlReader.FieldCount == 6)
+                            {
+                                ID = Convert.ToInt32(sqlReader.GetValue(0));
+                                _name = Convert.ToString(sqlReader.GetValue(1));
+                                _manufacturer = Convert.ToString(sqlReader.GetValue(2));
+                                _price = Convert.ToDecimal(sqlReader.GetValue(3));
+                                _amount = Convert.ToInt32(sqlReader.GetValue(4));
+                                _withPrescription = Convert.ToBoolean(sqlReader.GetValue(5));
+                            }
+                            else
+                            {
+                                OnFailAction?.Invoke("ZłyFieldCount.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        OnFailAction?.Invoke($"Klient o identyfikatorze {ID} nie istnieje.");
+                        throw new Exception("ID = 0, lub rekord nie istnieje.");
+                    }
+                    OnSuccesAction?.Invoke($"[Prescriptions] - Pomyślnie odświerzono rekord. ID = {ID}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message, ex.StackTrace);
+                OnFailAction?.Invoke($"{ex.Message}");
+            }
+            finally
+            {
+                Close();
+
+            }
         }
 
+     
         public override void Remove()
         {
-            throw new NotImplementedException();
+            Open();
+            SqlCommand cmd = new SqlCommand();
+            cmd.CommandText = "[MyPharmacyDB].[dbo].DeleteMedicine";
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Connection = _connection;
+
+            SqlParameter para1 = new SqlParameter()
+            {
+                ParameterName = "@id",
+                Value = ID,
+                DbType = DbType.Int32,
+                Direction = ParameterDirection.Input,
+            };
+            cmd.Parameters.Add(para1);
+
+            try
+            {
+                cmd.ExecuteNonQuery();
+                ID = Convert.ToInt32(cmd.ExecuteScalar());
+
+                OnSuccesAction?.Invoke($"[Medicine] - Pomyślnie usunięto rekord. ID = {ID}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message, ex.StackTrace);
+            }
+            finally
+            {
+                Close();
+            }
         }
     }
 }
