@@ -8,8 +8,8 @@ namespace Pharmacy
     internal class Program
     {
         public static readonly string FILENAME = "Test.txt";
-        public static Dictionary<int,Medicine> MedicinesDictionary = new Dictionary<int, Medicine>();
-        public static Dictionary<int,Prescription> PrescriptionsDictionary = new Dictionary<int, Prescription>();
+        public static Dictionary<int, Medicine> MedicinesDictionary = new Dictionary<int, Medicine>();
+        public static Dictionary<int, Prescription> PrescriptionsDictionary = new Dictionary<int, Prescription>();
 
         private static void Main(string[] args)
         {
@@ -23,20 +23,17 @@ namespace Pharmacy
                 //TODO: podstawie danych pobranych z bazy.
                 //TODO KOŃCOWE: Klasa raportu.
 
-
-
-                Medicine medicine = new Medicine(0, "Espumisan", "SlabaFirma", (decimal)33.99, 7, false);
+                Medicine medicine = new Medicine(0, "Lek", "Bayer", 33, 10, false);
                 medicine.Save();
 
-                Prescription prescription = new Prescription(0,"Jan","1111111116",1232414);
+                Prescription prescription = new Prescription(0, "Pan Stanisław", "99900088812", 9999999);
                 prescription.Save();
 
-                Order order = new Order(prescription, medicine, "11-02-2000", 3);
+                Order order = new Order(0, prescription, medicine, "10-02-2019", 3);
                 order.Save();
 
-                medicine.Remove();
-
-
+                Raport raport = new Raport();
+                raport.Reload();
             }
             catch (Exception ex)
             {
@@ -46,11 +43,10 @@ namespace Pharmacy
 
 
 
-            Process.Start("notepad.exe", $".\\{FILENAME}");
+            //Process.Start("notepad.exe", $".\\{FILENAME}");
 
             Console.ReadLine();
         }
-
         private static void DeleteAllOldDataInDB()
         {
             TableCleaner tbCleaner = new TableCleaner();

@@ -5,8 +5,6 @@ namespace Pharmacy
 {
     public class LogHandler
     {
-      
-
         public LogHandler(object sender)
         {
             try
@@ -32,6 +30,13 @@ namespace Pharmacy
                     (sender as Prescription).OnFailAction += AddLoggFail;
                     (sender as Prescription).OnSuccesAction += AddLogSucces;
                 }
+                else if (sender is Raport)
+                {
+                    (sender as Raport).OnCloseAction += AddLogSucces;
+                    (sender as Raport).OnCloseActionERR += AddLoggFail;
+                    (sender as Raport).OnFailAction += AddLoggFail;
+                    (sender as Raport).OnSuccesAction += AddLogSucces;
+                }
                 else
                 {
                     throw new Exception("Invalid Object Type.");
@@ -53,6 +58,11 @@ namespace Pharmacy
                 {
                     sw.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second} - Fail: {message}");
                 }
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second} - Fail: {message}");
+                Console.ForegroundColor = ConsoleColor.White;
+
             }
             catch (Exception e)
             {
@@ -68,6 +78,9 @@ namespace Pharmacy
                 {
                     sw.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second} - Succes: {message}");
                 }
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second} - Succes: {message}");
+                Console.ForegroundColor = ConsoleColor.White;
             }
             catch (Exception e)
             {

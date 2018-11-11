@@ -36,11 +36,83 @@ namespace Pharmacy
             }
             else
             {
-                //TODO 1: Modyfikacja
-                //TODO 2: if ID not exist in DB
+                UpdateRow();
             }
         }
+        private void UpdateRow()
+        {
+            SqlTransaction transaction = _connection.BeginTransaction();
 
+            SqlCommand cmd = new SqlCommand()
+            {
+                CommandText = "UPDATE [MyPharmacyDB].[dbo].[Medicines]" +
+                              "SET [Name] = @name," +
+                              "    [Manufacturer] = @manufacturer," +
+                              "    [Price] = @price," +
+                              "    [Amount] = @amount, " +
+                              "    [WithPrescription] = @withPrescription " +
+                              "WHERE ID = @id",
+                CommandType = CommandType.Text,
+                Connection = _connection,
+                Transaction = transaction
+            };
+            SqlParameter para = new SqlParameter()
+            {
+                ParameterName = "@id",
+                Value = ID,
+                DbType = DbType.Int32
+            };
+            SqlParameter para1 = new SqlParameter()
+            {
+                ParameterName = "@name",
+                Value = _name,
+                DbType = DbType.String
+            };
+            SqlParameter para2 = new SqlParameter()
+            {
+                ParameterName = "@manufacturer",
+                Value = _manufacturer,
+                DbType = DbType.String
+            };
+            SqlParameter para3 = new SqlParameter()
+            {
+                ParameterName = "@price",
+                Value = _price,
+                DbType = DbType.Decimal
+            }; SqlParameter para4 = new SqlParameter()
+            {
+                ParameterName = "@amount",
+                Value = _amount,
+                DbType = DbType.Int32
+            };
+            SqlParameter para5 = new SqlParameter()
+            {
+                ParameterName = "@withPrescription",
+                Value = _withPrescription,
+                DbType = DbType.Boolean
+            };
+            cmd.Parameters.Add(para);
+            cmd.Parameters.Add(para1);
+            cmd.Parameters.Add(para2);
+            cmd.Parameters.Add(para3);
+            cmd.Parameters.Add(para4);
+            cmd.Parameters.Add(para5);
+            try
+            {
+                transaction.Commit();
+                OnSuccesAction?.Invoke($"[Medicines] - Pomyślnie zmodyfikowano rekord. ID = {ID}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message, ex.StackTrace);
+                transaction.Rollback();
+                OnFailAction?.Invoke($"[Medicines] - Nie udało się zmodyfikować rekordu. ID = {ID}");
+            }
+            finally
+            {
+                Close();
+            }
+        }
         private void AddNewRow()
         {
             SqlTransaction transaction = _connection.BeginTransaction();
@@ -54,8 +126,6 @@ namespace Pharmacy
                 Connection = _connection,
                 Transaction = transaction
             };
-
-
             SqlParameter Name = new SqlParameter()
             {
                 ParameterName = "@Name",
@@ -86,21 +156,16 @@ namespace Pharmacy
                 Value = _withPrescription,
                 DbType = DbType.Boolean
             };
-
             cmd.Parameters.Add(Name);
             cmd.Parameters.Add(Manufacturer);
             cmd.Parameters.Add(Price);
             cmd.Parameters.Add(Amount);
             cmd.Parameters.Add(WithPrescription);
-
             try
             {
-                cmd.ExecuteNonQuery();
                 ID = Convert.ToInt32(cmd.ExecuteScalar());
-
                 transaction.Commit();
                 OnSuccesAction?.Invoke($"[Medicines] - Pomyślnie dodano rekord. ID = {ID}");
-
             }
             catch (Exception ex)
             {
@@ -115,15 +180,10 @@ namespace Pharmacy
 
         public override void Reload()
         {
-            /*        private string _name;
-               private string _manufacturer;
-               private decimal _price;
-               private int _amount;
-               private bool _withPrescription;
-               */
-
-
-
+            if (ID == 0)
+            {
+                throw new Exception("Reload - ID nie moze być 0");
+            }
             Open();
             SqlCommand cmd = new SqlCommand()
             {
@@ -142,10 +202,8 @@ namespace Pharmacy
             };
 
             cmd.Parameters.Add(para1);
-
             try
             {
-
                 using (SqlDataReader sqlReader = cmd.ExecuteReader())
                 {
                     if (sqlReader.HasRows)
@@ -183,10 +241,8 @@ namespace Pharmacy
             finally
             {
                 Close();
-
             }
         }
-
      
         public override void Remove()
         {
@@ -207,14 +263,13 @@ namespace Pharmacy
 
             try
             {
-                cmd.ExecuteNonQuery();
                 ID = Convert.ToInt32(cmd.ExecuteScalar());
-
                 OnSuccesAction?.Invoke($"[Medicine] - Pomyślnie usunięto rekord. ID = {ID}");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message, ex.StackTrace);
+                OnFailAction?.Invoke($"{ex.Message}");
             }
             finally
             {

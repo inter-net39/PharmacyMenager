@@ -35,25 +35,32 @@ namespace Pharmacy
             }
             else
             {
-                //TODO 1: Modyfikacja
-                //TODO 2: if ID not exist in DB
+                UpdateRow();
             }
         }
-        private void AddNewRow()
+
+        private void UpdateRow()
         {
             SqlTransaction transaction = _connection.BeginTransaction();
 
             SqlCommand cmd = new SqlCommand()
             {
-                CommandText = "INSERT INTO [MyPharmacyDB].[dbo].[Prescriptions] ( [CustomerName], [PESEL], [PrescriptionNumber])" +
-                              "VALUES( @CustomerName, @PESEL, @PrescriptionNumber);" +
-                              "SELECT SCOPE_IDENTITY(); ",
+                CommandText = "UPDATE [MyPharmacyDB].[dbo].[Prescriptions]" +
+                              "SET [CustomerName] = @CustomerName," +
+                              "    [PESEL] = @PESEL," +
+                              "    [PrescriptionNumber] = @PrescriptionNumber " +
+                              "WHERE ID = @id",
                 CommandType = CommandType.Text,
                 Connection = _connection,
                 Transaction = transaction
             };
 
-
+            SqlParameter para = new SqlParameter()
+            {
+                ParameterName = "@id",
+                Value = ID,
+                DbType = DbType.Int32
+            };
             SqlParameter para1 = new SqlParameter()
             {
                 ParameterName = "@CustomerName",
@@ -72,21 +79,67 @@ namespace Pharmacy
                 Value = PrescriptionNumber,
                 DbType = DbType.Int32
             };
-
-
+            cmd.Parameters.Add(para);
             cmd.Parameters.Add(para1);
             cmd.Parameters.Add(para2);
             cmd.Parameters.Add(para3);
-
-
             try
             {
-                cmd.ExecuteNonQuery();
                 ID = Convert.ToInt32(cmd.ExecuteScalar());
+                transaction.Commit();
+                OnSuccesAction?.Invoke($"[Prescriptions] - Pomyślnie zmodyfikowano rekord. ID = {ID}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message, ex.StackTrace);
+                transaction.Rollback();
+                OnFailAction?.Invoke($"[Prescriptions] - Nie udało się zmodyfikować rekordu. ID = {ID}");
+            }
+            finally
+            {
+                Close();
+            }
+        }
 
+        private void AddNewRow()
+        {
+            SqlTransaction transaction = _connection.BeginTransaction();
+
+            SqlCommand cmd = new SqlCommand()
+            {
+                CommandText = "INSERT INTO [MyPharmacyDB].[dbo].[Prescriptions] ( [CustomerName], [PESEL], [PrescriptionNumber])" +
+                              "VALUES( @CustomerName, @PESEL, @PrescriptionNumber);" +
+                              "SELECT SCOPE_IDENTITY(); ",
+                CommandType = CommandType.Text,
+                Connection = _connection,
+                Transaction = transaction
+            };
+            SqlParameter para1 = new SqlParameter()
+            {
+                ParameterName = "@CustomerName",
+                Value = CustomerName,
+                DbType = DbType.String
+            };
+            SqlParameter para2 = new SqlParameter()
+            {
+                ParameterName = "@PESEL",
+                Value = PESEL,
+                DbType = DbType.String
+            };
+            SqlParameter para3 = new SqlParameter()
+            {
+                ParameterName = "@PrescriptionNumber",
+                Value = PrescriptionNumber,
+                DbType = DbType.Int32
+            };
+            cmd.Parameters.Add(para1);
+            cmd.Parameters.Add(para2);
+            cmd.Parameters.Add(para3);
+            try
+            {
+                ID = Convert.ToInt32(cmd.ExecuteScalar());
                 transaction.Commit();
                 OnSuccesAction?.Invoke($"[Prescriptions] - Pomyślnie dodano rekord. ID = {ID}");
-
             }
             catch (Exception ex)
             {
@@ -101,6 +154,10 @@ namespace Pharmacy
 
         public override void Reload()
         {
+            if (ID == 0)
+            {
+                throw new Exception("Reload - ID nie moze być 0");
+            }
             Open();
             SqlCommand cmd = new SqlCommand()
             {
@@ -110,7 +167,6 @@ namespace Pharmacy
                 CommandType = CommandType.Text,
                 Connection = _connection,
             };
-      
             SqlParameter para1 = new SqlParameter()
             {
                 ParameterName = "@id",
@@ -122,7 +178,6 @@ namespace Pharmacy
 
             try
             {
-
                 using (SqlDataReader sqlReader = cmd.ExecuteReader())
                 {
                     if (sqlReader.HasRows)
@@ -158,7 +213,6 @@ namespace Pharmacy
             finally
             {
                 Close();
-               
             }
         }
 
@@ -166,7 +220,7 @@ namespace Pharmacy
         {
             Open();
             SqlCommand cmd = new SqlCommand();
-            cmd.CommandText = "DeletePrescription";
+            cmd.CommandText = "[MyPharmacyDB].[dbo].DeletePrescription";
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Connection = _connection;
 
@@ -177,19 +231,16 @@ namespace Pharmacy
                 DbType = DbType.Int32,
                 Direction = ParameterDirection.Input,
             };
-
             cmd.Parameters.Add(para1);
-
             try
             {
-                cmd.ExecuteNonQuery();
                 ID = Convert.ToInt32(cmd.ExecuteScalar());
-
                 OnSuccesAction?.Invoke($"[Prescriptions] - Pomyślnie usunięto rekord. ID = {ID}");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message, ex.StackTrace);
+                OnFailAction?.Invoke($"{ex.Message}");
             }
             finally
             {

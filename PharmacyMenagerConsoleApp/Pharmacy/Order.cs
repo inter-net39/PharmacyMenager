@@ -11,16 +11,15 @@ namespace Pharmacy
         private string _date;
         private int _amount;
 
-        public Order(Prescription prescriptionObj, Medicine medicineObj, string date, int amount)
+        public Order(int id, Prescription prescriptionObj, Medicine medicineObj, string date, int amount)
         {
             _prescriptionID = prescriptionObj.ID;
             _medicineID = medicineObj.ID;
             _date = date;
             _amount = amount;
-
+            ID = id;
             new LogHandler(this);
         }
-
         public override event Action<string> OnSuccesAction;
         public override event Action<string> OnFailAction;
 
@@ -33,11 +32,8 @@ namespace Pharmacy
             }
             else
             {
-                //TODO 1: Modyfikacja
-                //TODO 2: if ID not exist in DB
+                UpdateRow();
             }
-            //todo: to cos nie dziala.??
-
         }
 
         private void AddNewRow()
@@ -55,8 +51,6 @@ namespace Pharmacy
                     Connection = _connection,
                     Transaction = transaction
                 };
-
-
                 SqlParameter parameterPrescriptionID = new SqlParameter()
                 {
                     ParameterName = "@PrescriptionID",
@@ -81,17 +75,13 @@ namespace Pharmacy
                     Value = _amount,
                     DbType = DbType.Int32
                 };
-
                 cmd.Parameters.Add(parameterPrescriptionID);
                 cmd.Parameters.Add(parameterMedicineID);
                 cmd.Parameters.Add(parameterDate);
                 cmd.Parameters.Add(parameterAmount);
-
                 try
                 {
-                    cmd.ExecuteNonQuery();
                     ID = Convert.ToInt32(cmd.ExecuteScalar());
-
                     transaction.Commit();
                     OnSuccesAction?.Invoke($"[Orders] - Pomyślnie dodano rekord. ID = {ID}");
                 }
@@ -107,20 +97,84 @@ namespace Pharmacy
             }
             else
             {
-                //TODO 1: Modyfikacja
-                //TODO 2: if ID not exist in DB
+                UpdateRow();
             }
+        }
+        private void UpdateRow()
+        {
+            SqlTransaction transaction = _connection.BeginTransaction();
 
+            SqlCommand cmd = new SqlCommand()
+            {
+                CommandText = "UPDATE [MyPharmacyDB].[dbo].[Orders]" +
+                              "SET [PrescriptionID] = @PrescriptionID," +
+                              "    [MedicineID] = @MedicineID," +
+                              "    [Date] = @Date," +
+                              "    [Amount] = @Amount " +
+                              "WHERE ID = @id",
+                CommandType = CommandType.Text,
+                Connection = _connection,
+                Transaction = transaction
+            };
+
+            SqlParameter para = new SqlParameter()
+            {
+                ParameterName = "@id",
+                Value = ID,
+                DbType = DbType.Int32
+            };
+            SqlParameter para1 = new SqlParameter()
+            {
+                ParameterName = "@PrescriptionID",
+                Value = _prescriptionID,
+                DbType = DbType.String
+            };
+            SqlParameter para2 = new SqlParameter()
+            {
+                ParameterName = "@MedicineID",
+                Value = _medicineID,
+                DbType = DbType.String
+            };
+            SqlParameter para3 = new SqlParameter()
+            {
+                ParameterName = "@Date",
+                Value = _date,
+                DbType = DbType.Decimal
+            }; SqlParameter para4 = new SqlParameter()
+            {
+                ParameterName = "@Amount",
+                Value = _amount,
+                DbType = DbType.Int32
+            };
+            cmd.Parameters.Add(para);
+            cmd.Parameters.Add(para1);
+            cmd.Parameters.Add(para2);
+            cmd.Parameters.Add(para3);
+            cmd.Parameters.Add(para4);
+            try
+            {
+                transaction.Commit();
+                OnSuccesAction?.Invoke($"[Orders] - Pomyślnie zmodyfikowano rekord. ID = {ID}");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message, ex.StackTrace);
+                transaction.Rollback();
+                OnFailAction?.Invoke($"[Orders] - Nie udało się zmodyfikować rekordu. ID = {ID}");
+            }
+            finally
+            {
+                Close();
+            }
         }
 
         public override void Reload()
         {
-            /*
-             * private readonly int _prescriptionID;
-               private readonly int _medicineID;
-               private readonly string _date;
-               private readonly int _amount;
-             */
+            if (ID == 0)
+            {
+                throw new Exception("Reload - ID nie moze być 0");
+            }
             Open();
             SqlCommand cmd = new SqlCommand()
             {
@@ -137,12 +191,9 @@ namespace Pharmacy
                 Value = ID,
                 DbType = DbType.Int32
             };
-
             cmd.Parameters.Add(para1);
-
             try
             {
-
                 using (SqlDataReader sqlReader = cmd.ExecuteReader())
                 {
                     if (sqlReader.HasRows)
@@ -179,16 +230,17 @@ namespace Pharmacy
             finally
             {
                 Close();
-
             }
         }
 
 
         public override void Remove()
         {
+            Reload();
+
             Open();
             SqlCommand cmd = new SqlCommand();
-            cmd.CommandText = "DeleteOrder";
+            cmd.CommandText = "[MyPharmacyDB].[dbo].DeleteOrder";
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Connection = _connection;
 
@@ -204,14 +256,13 @@ namespace Pharmacy
 
             try
             {
-                cmd.ExecuteNonQuery();
                 ID = Convert.ToInt32(cmd.ExecuteScalar());
-
                 OnSuccesAction?.Invoke($"[Orders] - Pomyślnie usunięto rekord. ID = {ID}");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message, ex.StackTrace);
+                OnFailAction?.Invoke($"{ex.Message}");
             }
             finally
             {
