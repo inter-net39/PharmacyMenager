@@ -16,6 +16,12 @@ namespace Pharmacy
             new LogHandler(this);
 
         }
+        public Prescription(int id)
+        {
+            ID = id;
+            new LogHandler(this);
+            Reload();
+        }
 
         public string CustomerName { get; private set; }
         public string PESEL { get; private set; }

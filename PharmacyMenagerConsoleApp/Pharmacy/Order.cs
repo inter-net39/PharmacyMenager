@@ -20,6 +20,13 @@ namespace Pharmacy
             ID = id;
             new LogHandler(this);
         }
+
+        public Order(int id)
+        {
+            ID = id;
+            new LogHandler(this);
+            Reload();
+        }
         public override event Action<string> OnSuccesAction;
         public override event Action<string> OnFailAction;
 

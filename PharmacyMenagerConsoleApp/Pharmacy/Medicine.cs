@@ -22,6 +22,12 @@ namespace Pharmacy
             _withPrescription = withPrescription;
             new LogHandler(this);
         }
+        public Medicine(int id)
+        {
+            ID = id;
+            new LogHandler(this);
+            Reload();
+        }
 
         public override event Action<string> OnSuccesAction;
         public override event Action<string> OnFailAction;

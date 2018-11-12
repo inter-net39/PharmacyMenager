@@ -33,8 +33,9 @@ namespace Pharmacy
 
                 //Raport raport = new Raport();
                 //raport.Reload();
-
-
+                Prescription lastPrescription = null;
+                Medicine lastMedicine = null;
+                Order lastOrder = null;
 
                 string command = "";
                 do
@@ -57,7 +58,7 @@ namespace Pharmacy
                     {
                         string commandType = commandSplited[0];
                         string[] commandValues = commandSplited[1].Split(',');
-                        NewMethod(commandType, commandValues);
+                        NewMethod(commandType, commandValues, lastPrescription, lastMedicine, lastOrder);
                     }
                     else
                     {
@@ -67,23 +68,18 @@ namespace Pharmacy
 
                 } while (command.ToLower() != "exit");
 
-
-
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message, ex.StackTrace);
             }
 
-
-
-
             //Process.Start("notepad.exe", $".\\{FILENAME}");
 
             Console.ReadLine();
         }
 
-        private static void NewMethod(string commandType, string[] commandValues)
+        private static void NewMethod(string commandType, string[] commandValues, Prescription lastPrescription, Medicine lastMedicine, Order lastOrder)
         {
             if (commandType == "AddMedicine")
             {
@@ -101,7 +97,7 @@ namespace Pharmacy
                     {
                         Medicine myMedicine = new Medicine(id, name, manufacturer, price, amount, withPrescription);
                         myMedicine.Save();
-
+                        lastMedicine = myMedicine;
                     }
                     else
                     {
@@ -118,7 +114,23 @@ namespace Pharmacy
             {
                 if (commandValues.Length == 4)
                 {
+                    //[int id],[string customerName],[string pesel],[int prescriptionNumber]
+                    int id = Convert.ToInt32(commandValues[0]);
+                    string customerName = Convert.ToString(commandValues[1]);
+                    string pesel = Convert.ToString(commandValues[2]);
+                    int prescriptionNumber = Convert.ToInt32(commandValues[3]);
 
+
+                    if (id != null && customerName != null && pesel != null && prescriptionNumber != null)
+                    {
+                        Prescription myPrescription = new Prescription(id, customerName, pesel, prescriptionNumber);
+                        myPrescription.Save();
+                        lastPrescription = myPrescription;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Argumenty nie pasują swoim typom");
+                    }
                 }
                 else
                 {
@@ -129,7 +141,33 @@ namespace Pharmacy
             {
                 if (commandValues.Length == 5)
                 {
+                    //[int id],[Prescription prescriptionObj],[Medicine medicineObj],[string date],[int amount]
+                    int id = Convert.ToInt32(commandValues[0]);
+                    int lastPresciptionNumber = Convert.ToInt32(commandValues[1]);
+                    int lastMedicineNumber  = Convert.ToInt32(commandValues[2]);
+                    if (lastPresciptionNumber != 0)
+                    {
+                        lastPrescription = new Prescription(lastPresciptionNumber);
+                    }
 
+                    if (lastMedicineNumber != 0)
+                    {
+                        lastMedicine = new Medicine(lastMedicineNumber);
+                    }
+                    string date = Convert.ToString(commandValues[3]);
+                    int amount = Convert.ToInt32(commandValues[4]);
+
+
+                    if (id != null && lastPrescription != null && lastMedicine != null && date != null && amount != null)
+                    {
+                        Order myOrder = new Order(id, lastPrescription, lastMedicine, date, amount);
+                        myOrder.Save();
+                        lastOrder = myOrder;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Argumenty nie pasują swoim typom");
+                    }
                 }
                 else
                 {
