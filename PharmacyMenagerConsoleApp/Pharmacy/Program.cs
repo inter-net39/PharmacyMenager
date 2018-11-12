@@ -29,10 +29,7 @@ namespace Pharmacy
                     Console.WriteLine(@"Metody typu add przy podaniu ID = 0 dodają nowy rekord. W przypadku podania ID > 0 dane podane w poleceniu add modyfikują danu rekord o podanym ID.");
                     Console.WriteLine(@"AddMedicine     [int id],[string name],[string manufacturer],[decimal price],[int amount],[bool withPrescription]");
                     Console.WriteLine(@"AddPrescription [int id],[string customerName],[string pesel],[int prescriptionNumber]");
-                    Console.WriteLine(@"AddOrder        [int id],[Prescription prescriptionID],[Medicine medicineID],[string date],[int amount]");
-                    Console.WriteLine(@"Select");
-
-                    
+                    Console.WriteLine(@"AddOrder        [int id],[Prescription prescriptionID],[Medicine medicineID],[string date],[int amount]");       
                     Console.ForegroundColor = ConsoleColor.White;
 
                     command = Console.ReadLine();
