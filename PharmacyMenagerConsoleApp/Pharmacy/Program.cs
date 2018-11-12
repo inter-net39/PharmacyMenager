@@ -10,45 +10,29 @@ namespace Pharmacy
         public static Dictionary<int, Medicine> MedicinesDictionary = new Dictionary<int, Medicine>();
         public static Dictionary<int, Prescription> PrescriptionsDictionary = new Dictionary<int, Prescription>();
 
+        public static Prescription lastPrescription = null;
+        public static Medicine lastMedicine = null;
+        public static Order lastOrder = null;
+
         private static void Main(string[] args)
         {
             try
             {
                 DeleteOldLogs();
                 //DeleteAllOldDataInDB();
-                ////TODO: Dodatkowo potrzebujesz metod pobierających
-                ////TODO: dane z bazy danych.
-                ////TODO: Metody muszą zwracać uzupełnione obiekty na
-                ////TODO: podstawie danych pobranych z bazy.
-                ////TODO KOŃCOWE: Klasa raportu.
-
-                //Medicine medicine = new Medicine(0, "Lek", "Bayer", 33, 10, false);
-                //medicine.Save();
-
-                //Prescription prescription = new Prescription(0, "Pan Stanisław", "99900088812", 9999999);
-                //prescription.Save();
-
-                //Order order = new Order(0, prescription, medicine, "10-02-2019", 3);
-                //order.Save();
-
-                //Raport raport = new Raport();
-                //raport.Reload();
-                Prescription lastPrescription = null;
-                Medicine lastMedicine = null;
-                Order lastOrder = null;
-
+            
                 string command = "";
                 do
                 {
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine("Dostępne komendy:");
+                    Console.WriteLine(@"Metody typu add przy podaniu ID = 0 dodają nowy rekord. W przypadku podania ID > 0 dane podane w poleceniu add modyfikują danu rekord o podanym ID.");
                     Console.WriteLine(@"AddMedicine     [int id],[string name],[string manufacturer],[decimal price],[int amount],[bool withPrescription]");
                     Console.WriteLine(@"AddPrescription [int id],[string customerName],[string pesel],[int prescriptionNumber]");
-                    Console.WriteLine(@"AddOrder        [int id],[Prescription prescriptionObj],[Medicine medicineObj],[string date],[int amount]");
-                    Console.WriteLine("Dostępne Aliasy:");
-                    Console.WriteLine("-lastP = Ostatnio dodany Prescription");
-                    Console.WriteLine("-lastM = Ostatnio dodany Medicine");
+                    Console.WriteLine(@"AddOrder        [int id],[Prescription prescriptionID],[Medicine medicineID],[string date],[int amount]");
+                    Console.WriteLine(@"Select");
 
+                    
                     Console.ForegroundColor = ConsoleColor.White;
 
                     command = Console.ReadLine();
@@ -58,7 +42,11 @@ namespace Pharmacy
                     {
                         string commandType = commandSplited[0];
                         string[] commandValues = commandSplited[1].Split(',');
-                        NewMethod(commandType, commandValues, lastPrescription, lastMedicine, lastOrder);
+                        NewMethod(commandType, commandValues, lastPrescription, lastMedicine);
+                    }
+                    else if (commandSplited[0] == "Select")
+                    {
+                        
                     }
                     else
                     {
@@ -79,7 +67,7 @@ namespace Pharmacy
             Console.ReadLine();
         }
 
-        private static void NewMethod(string commandType, string[] commandValues, Prescription lastPrescription, Medicine lastMedicine, Order lastOrder)
+        private static void NewMethod(string commandType, string[] commandValues, Prescription lastPrescription, Medicine lastMedicine)
         {
             if (commandType == "AddMedicine")
             {
@@ -97,7 +85,7 @@ namespace Pharmacy
                     {
                         Medicine myMedicine = new Medicine(id, name, manufacturer, price, amount, withPrescription);
                         myMedicine.Save();
-                        lastMedicine = myMedicine;
+                        Program.lastMedicine = myMedicine;
                     }
                     else
                     {
@@ -125,7 +113,7 @@ namespace Pharmacy
                     {
                         Prescription myPrescription = new Prescription(id, customerName, pesel, prescriptionNumber);
                         myPrescription.Save();
-                        lastPrescription = myPrescription;
+                        Program.lastPrescription = myPrescription;
                     }
                     else
                     {
@@ -147,12 +135,12 @@ namespace Pharmacy
                     int lastMedicineNumber  = Convert.ToInt32(commandValues[2]);
                     if (lastPresciptionNumber != 0)
                     {
-                        lastPrescription = new Prescription(lastPresciptionNumber);
+                        Program.lastPrescription = new Prescription(lastPresciptionNumber);
                     }
 
                     if (lastMedicineNumber != 0)
                     {
-                        lastMedicine = new Medicine(lastMedicineNumber);
+                        Program.lastMedicine = new Medicine(lastMedicineNumber);
                     }
                     string date = Convert.ToString(commandValues[3]);
                     int amount = Convert.ToInt32(commandValues[4]);
@@ -162,7 +150,7 @@ namespace Pharmacy
                     {
                         Order myOrder = new Order(id, lastPrescription, lastMedicine, date, amount);
                         myOrder.Save();
-                        lastOrder = myOrder;
+                        //Program.lastOrder = myOrder;
                     }
                     else
                     {

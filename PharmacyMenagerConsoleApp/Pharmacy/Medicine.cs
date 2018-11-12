@@ -105,6 +105,7 @@ namespace Pharmacy
             cmd.Parameters.Add(para5);
             try
             {
+                cmd.ExecuteNonQuery();
                 transaction.Commit();
                 OnSuccesAction?.Invoke($"[Medicines] - Pomyślnie zmodyfikowano rekord. ID = {ID}");
             }
@@ -236,7 +237,7 @@ namespace Pharmacy
                         OnFailAction?.Invoke($"Klient o identyfikatorze {ID} nie istnieje.");
                         throw new Exception("ID = 0, lub rekord nie istnieje.");
                     }
-                    OnSuccesAction?.Invoke($"[Prescriptions] - Pomyślnie odświerzono rekord. ID = {ID}");
+                    OnSuccesAction?.Invoke($"[Medicines] - Pomyślnie odświerzono rekord. ID = {ID}");
                 }
             }
             catch (Exception ex)

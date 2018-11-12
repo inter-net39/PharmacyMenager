@@ -160,6 +160,7 @@ namespace Pharmacy
             cmd.Parameters.Add(para4);
             try
             {
+                cmd.ExecuteNonQuery();
                 transaction.Commit();
                 OnSuccesAction?.Invoke($"[Orders] - Pomyślnie zmodyfikowano rekord. ID = {ID}");
 
