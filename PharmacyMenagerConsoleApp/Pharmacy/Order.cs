@@ -96,7 +96,7 @@ namespace Pharmacy
                     transaction.Commit();
                     OnSuccesAction?.Invoke($"[Orders] - Pomyślnie dodano rekord. ID = {ID}");
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //Console.WriteLine(ex.Message, ex.StackTrace);
                     transaction.Rollback();
@@ -169,7 +169,7 @@ namespace Pharmacy
                 OnSuccesAction?.Invoke($"[Orders] - Pomyślnie zmodyfikowano rekord. ID = {ID}");
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //Console.WriteLine(ex.Message, ex.StackTrace);
                 transaction.Rollback();

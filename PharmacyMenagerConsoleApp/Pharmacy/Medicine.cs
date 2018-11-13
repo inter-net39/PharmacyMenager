@@ -113,7 +113,7 @@ namespace Pharmacy
                 transaction.Commit();
                 OnSuccesAction?.Invoke($"[Medicines] - Pomyślnie zmodyfikowano rekord. ID = {ID}");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ////Console.WriteLine(ex.Message, ex.StackTrace);
                 transaction.Rollback();
@@ -178,7 +178,7 @@ namespace Pharmacy
                 transaction.Commit();
                 OnSuccesAction?.Invoke($"[Medicines] - Pomyślnie dodano rekord. ID = {ID}");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ////Console.WriteLine(ex.Message, ex.StackTrace);
                 transaction.Rollback();
@@ -254,7 +254,7 @@ namespace Pharmacy
                 Close();
             }
         }
-     
+
         public override void Remove()
         {
             Open();

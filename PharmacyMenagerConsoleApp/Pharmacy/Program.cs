@@ -7,88 +7,210 @@ namespace Pharmacy
     internal class Program
     {
         public static readonly string FILENAME = "Test.txt";
-        public static Dictionary<int, Medicine> MedicinesDictionary = new Dictionary<int, Medicine>();
-        public static Dictionary<int, Prescription> PrescriptionsDictionary = new Dictionary<int, Prescription>();
-
-        public static Prescription lastPrescription = null;
-        public static Medicine lastMedicine = null;
-        public static Order lastOrder = null;
+        public static Prescription lastPrescription;
+        public static Medicine lastMedicine;
+        public static Order lastOrder;
 
         private static void Main(string[] args)
         {
+            Raport raport = new Raport();
+
             try
             {
                 DeleteOldLogs();
                 //DeleteAllOldDataInDB();
-            
+
                 string command = "";
                 do
                 {
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine("Dostępne komendy:");
-                    Console.WriteLine(@"Metody typu add przy podaniu ID = 0 dodają nowy rekord. W przypadku podania ID > 0 dane podane w poleceniu add modyfikują danu rekord o podanym ID.");
+                    Console.WriteLine(@"Metody typu add przy podaniu ID = 0 dodają nowy rekord. W przypadku podania ID > 0 dane podane w poleceniu Add modyfikują dany rekord o podanym ID.");
                     Console.WriteLine(@"AddMedicine     [int id],[string name],[string manufacturer],[decimal price],[int amount],[bool withPrescription]");
                     Console.WriteLine(@"AddPrescription [int id],[string customerName],[string pesel],[int prescriptionNumber]");
-                    Console.WriteLine(@"AddOrder        [int id],[Prescription prescriptionID],[Medicine medicineID],[string date],[int amount]");       
-                    Console.WriteLine(@"Select Medicine/Prescription/Order id");
-
-                    Console.WriteLine(@"Remove Medicine/Prescription/Order [id-opcjonalnie jeżeli wczesniej wybrano]");
-                    Console.WriteLine(@"Show Medicine/Prescription/Order [id-opcjonalnie jeżeli wczesniej wybrano]]");
-
+                    Console.WriteLine(@"AddOrder        [int id],[Prescription prescriptionID],[Medicine medicineID],[string date],[int amount]");
+                    Console.WriteLine(@"Remove Medicine/Prescription/Order");
+                    Console.WriteLine(@"Show Medicines/Prescriptions/Orders"); 
+                    Console.WriteLine(@"Select [Medicine/Prescription/Order] [int id]"); 
                     Console.ForegroundColor = ConsoleColor.White;
+
                     command = Console.ReadLine();
+
                     string[] commandSplited = command.Split(' ');
 
                     if (commandSplited.Length == 2)
                     {
-                        string commandType = commandSplited[0];
-                        string[] commandValues = commandSplited[1].Split(',');
-                        NewMethod(commandType, commandValues, lastPrescription, lastMedicine);
+                        if (commandSplited[0].Contains("Add"))
+                        {
+                            string commandType = commandSplited[0];
+                            string[] commandValues = commandSplited[1].Split(',');
+                            NewMethod(commandType, commandValues, lastPrescription, lastMedicine);
+                        }
+                        else if (commandSplited[0] == "Show")
+                        {
+                            NewMethod2(raport, commandSplited);
+                        }
+                        else if (commandSplited[0] == "Remove")
+                        {
+                            NewMethod1(commandSplited);
+                        }
                     }
                     else if (commandSplited.Length == 3)
                     {
-                        var sID = Convert.ToInt32(commandSplited[2]);
-                        if (commandSplited[0] == "Select" && sID != null)
-                        {
-                            if (commandSplited[1] =="Medicine")
-                            {
-                                Program.lastMedicine = new Medicine(sID);
-                            }
-                            else if (commandSplited[1] == "Prescription")
-                            {
-                                Program.lastPrescription = new Prescription(sID);
-                            }
-                            else if (commandSplited[1] == "Order")
-                            {
-                                Program.lastOrder = new Order(sID);
-                            }
-                            else
-                            {
-                                Console.WriteLine("Niepoprawna komenda.");
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Niepoprawna komenda.");
-                        }
+                        SelectCMD(commandSplited);
                     }
                     else
                     {
                         Console.WriteLine("Niepoprawna komenda.");
                     }
 
-
                 } while (command.ToLower() != "exit");
-
             }
             catch (Exception ex)
             {
-                //Console.WriteLine(ex.Message, ex.StackTrace);
+                Console.WriteLine(ex.Message, ex.StackTrace);
             }
-
-            //Process.Start("notepad.exe", $".\\{FILENAME}");
-
             Console.ReadLine();
+        }
+
+        private static void SelectCMD(string[] commandSplited)
+        {
+            var sID = Convert.ToInt32(commandSplited[2]);
+            if (commandSplited[0] == "Select" && sID != null)
+            {
+                if (commandSplited[1] == "Medicine")
+                {
+                    Program.lastMedicine = new Medicine(sID);
+                }
+                else if (commandSplited[1] == "Prescription")
+                {
+                    Program.lastPrescription = new Prescription(sID);
+                }
+                else if (commandSplited[1] == "Order")
+                {
+                    Program.lastOrder = new Order(sID);
+                }
+                else
+                {
+                    Console.WriteLine("Niepoprawna komenda.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Niepoprawna komenda.");
+            }
+        }
+
+        private static void NewMethod2(Raport raport, string[] commandSplited)
+        {
+            if (commandSplited[1] == "Medicines")
+            {
+                raport.ShowMedicines();
+            }
+            else if (commandSplited[1] == "Orders")
+            {
+                raport.ShowOrders();
+            }
+            else if (commandSplited[1] == "Prescriptions")
+            {
+                raport.ShowPrescriptions();
+            }
+            else
+            {
+                Console.WriteLine("Niepoprawna komenda.");
+            }
+        }
+
+        private static void NewMethod1(string[] commandSplited)
+        {
+            if (commandSplited[1] == "Medicine")
+            {
+                Console.WriteLine("Wprowadz ID do usunięcia, lub wpisz Yes aby usnąć wczesniej wybrany.");
+                string com = Console.ReadLine();
+                int val = Convert.ToInt32(com);
+                if (com.Contains("Yes") && lastMedicine != null)
+                {
+                    lastMedicine.Remove();
+                    lastMedicine = null;
+                }
+                else if (val > 0)
+                {
+                    lastMedicine = new Medicine(val);
+                    if (lastMedicine != null)
+                    {
+                        lastMedicine.Remove();
+                        lastMedicine = null;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Błąd.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Niepoprawna komenda.");
+                }
+            }
+            else if (commandSplited[1] == "Order")
+            {
+                Console.WriteLine("Wprowadz ID do usunięcia, lub wpisz Yes aby usnąć wczesniej wybrany.");
+                string com = Console.ReadLine();
+                int val = Convert.ToInt32(com);
+                if (com.Contains("Yes") && lastOrder != null)
+                {
+                    lastOrder.Remove();
+                    lastOrder = null;
+                }
+                else if (val > 0)
+                {
+                    lastOrder = new Order(val);
+                    if (lastOrder != null)
+                    {
+                        lastOrder.Remove();
+                        lastOrder = null;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Błąd.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Niepoprawna komenda.");
+                }
+            }
+            else if (commandSplited[1] == "Prescription")
+            {
+                Console.WriteLine("Wprowadz ID do usunięcia, lub wpisz Yes aby usnąć wczesniej wybrany.");
+                string com = Console.ReadLine();
+                int val = Convert.ToInt32(com);
+                if (com.Contains("Yes") && lastPrescription != null)
+                {
+                    lastPrescription.Remove();
+                    lastPrescription = null;
+                }
+                else if (val > 0)
+                {
+                    lastPrescription = new Prescription(val);
+                    if (lastPrescription != null)
+                    {
+                        lastPrescription.Remove();
+                        lastPrescription = null;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Błąd.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Niepoprawna komenda.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Niepoprawna komenda.");
+            }
         }
 
         private static void NewMethod(string commandType, string[] commandValues, Prescription lastPrescription, Medicine lastMedicine)
@@ -115,7 +237,6 @@ namespace Pharmacy
                     {
                         Console.WriteLine("Argumenty nie pasują swoim typom");
                     }
-
                 }
                 else
                 {
@@ -131,7 +252,6 @@ namespace Pharmacy
                     string customerName = Convert.ToString(commandValues[1]);
                     string pesel = Convert.ToString(commandValues[2]);
                     int prescriptionNumber = Convert.ToInt32(commandValues[3]);
-
 
                     if (id != null && customerName != null && pesel != null && prescriptionNumber != null)
                     {
@@ -156,29 +276,36 @@ namespace Pharmacy
                     //[int id],[Prescription prescriptionObj],[Medicine medicineObj],[string date],[int amount]
                     int id = Convert.ToInt32(commandValues[0]);
                     int lastPresciptionNumber = Convert.ToInt32(commandValues[1]);
-                    int lastMedicineNumber  = Convert.ToInt32(commandValues[2]);
+                    int lastMedicineNumber = Convert.ToInt32(commandValues[2]);
                     if (lastPresciptionNumber != 0)
                     {
                         Program.lastPrescription = new Prescription(lastPresciptionNumber);
                     }
-
                     if (lastMedicineNumber != 0)
                     {
                         Program.lastMedicine = new Medicine(lastMedicineNumber);
                     }
                     string date = Convert.ToString(commandValues[3]);
                     int amount = Convert.ToInt32(commandValues[4]);
-
-
-                    if (id != null && lastPrescription != null && lastMedicine != null && date != null && amount != null)
+                    if (lastPrescription != null && lastMedicine != null)
                     {
-                        Order myOrder = new Order(id, lastPrescription, lastMedicine, date, amount);
-                        myOrder.Save();
-                        //Program.lastOrder = myOrder;
+
+
+                        if (id != null && lastPrescription != null && lastMedicine != null && date != null &&
+                            amount != null)
+                        {
+                            Order myOrder = new Order(id, lastPrescription, lastMedicine, date, amount);
+                            myOrder.Save();
+                            Program.lastOrder = myOrder;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Argumenty nie pasują swoim typom");
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("Argumenty nie pasują swoim typom");
+                        Console.WriteLine("Nie udało się utworzyć [Order]");
                     }
                 }
                 else
