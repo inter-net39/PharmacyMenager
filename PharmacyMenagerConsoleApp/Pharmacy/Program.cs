@@ -30,8 +30,12 @@ namespace Pharmacy
                     Console.WriteLine(@"AddMedicine     [int id],[string name],[string manufacturer],[decimal price],[int amount],[bool withPrescription]");
                     Console.WriteLine(@"AddPrescription [int id],[string customerName],[string pesel],[int prescriptionNumber]");
                     Console.WriteLine(@"AddOrder        [int id],[Prescription prescriptionID],[Medicine medicineID],[string date],[int amount]");       
-                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(@"Select Medicine/Prescription/Order id");
 
+                    Console.WriteLine(@"Remove Medicine/Prescription/Order [id-opcjonalnie jeżeli wczesniej wybrano]");
+                    Console.WriteLine(@"Show Medicine/Prescription/Order [id-opcjonalnie jeżeli wczesniej wybrano]]");
+
+                    Console.ForegroundColor = ConsoleColor.White;
                     command = Console.ReadLine();
                     string[] commandSplited = command.Split(' ');
 
@@ -41,9 +45,32 @@ namespace Pharmacy
                         string[] commandValues = commandSplited[1].Split(',');
                         NewMethod(commandType, commandValues, lastPrescription, lastMedicine);
                     }
-                    else if (commandSplited[0] == "Select")
+                    else if (commandSplited.Length == 3)
                     {
-                        
+                        var sID = Convert.ToInt32(commandSplited[2]);
+                        if (commandSplited[0] == "Select" && sID != null)
+                        {
+                            if (commandSplited[1] =="Medicine")
+                            {
+                                Program.lastMedicine = new Medicine(sID);
+                            }
+                            else if (commandSplited[1] == "Prescription")
+                            {
+                                Program.lastPrescription = new Prescription(sID);
+                            }
+                            else if (commandSplited[1] == "Order")
+                            {
+                                Program.lastOrder = new Order(sID);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Niepoprawna komenda.");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Niepoprawna komenda.");
+                        }
                     }
                     else
                     {
@@ -56,7 +83,7 @@ namespace Pharmacy
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message, ex.StackTrace);
+                //Console.WriteLine(ex.Message, ex.StackTrace);
             }
 
             //Process.Start("notepad.exe", $".\\{FILENAME}");

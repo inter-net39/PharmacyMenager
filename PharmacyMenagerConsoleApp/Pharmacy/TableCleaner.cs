@@ -65,7 +65,7 @@ namespace Pharmacy
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message, ex.StackTrace);
+                //Console.WriteLine(ex.Message, ex.StackTrace);
                 transaction.Rollback();
             }
             finally

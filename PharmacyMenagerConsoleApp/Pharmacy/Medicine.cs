@@ -40,9 +40,13 @@ namespace Pharmacy
             {
                 AddNewRow();
             }
-            else
+            else if (ID > 0)
             {
                 UpdateRow();
+            }
+            else
+            {
+                OnFailAction?.Invoke($"Numer Id nie może być ujemny.");
             }
         }
         private void UpdateRow()
@@ -111,7 +115,7 @@ namespace Pharmacy
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message, ex.StackTrace);
+                ////Console.WriteLine(ex.Message, ex.StackTrace);
                 transaction.Rollback();
                 OnFailAction?.Invoke($"[Medicines] - Nie udało się zmodyfikować rekordu. ID = {ID}");
             }
@@ -176,7 +180,7 @@ namespace Pharmacy
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message, ex.StackTrace);
+                ////Console.WriteLine(ex.Message, ex.StackTrace);
                 transaction.Rollback();
             }
             finally
@@ -242,7 +246,7 @@ namespace Pharmacy
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message, ex.StackTrace);
+                ////Console.WriteLine(ex.Message, ex.StackTrace);
                 OnFailAction?.Invoke($"{ex.Message}");
             }
             finally
@@ -275,7 +279,7 @@ namespace Pharmacy
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message, ex.StackTrace);
+                ////Console.WriteLine(ex.Message, ex.StackTrace);
                 OnFailAction?.Invoke($"{ex.Message}");
             }
             finally
