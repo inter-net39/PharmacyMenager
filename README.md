@@ -1,4 +1,4 @@
-# PharmacyMenager ADO.NET
+# PharmacyMenager (.NET ConsoleApplication z wykorzystaniem ADO.NET)
 
 Aplikacja konsolowa nawiązująca połączenie z bazą danych MS SQL i wykonywująca następujące operacje:
 
