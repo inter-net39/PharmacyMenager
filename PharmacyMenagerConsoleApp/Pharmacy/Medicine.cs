@@ -20,12 +20,12 @@ namespace Pharmacy
             _price = price;
             _amount = amount;
             _withPrescription = withPrescription;
-            new LogHandler(this);
+            Program.Log.AddLogMaker(this);
         }
         public Medicine(int id)
         {
             ID = id;
-            new LogHandler(this);
+            Program.Log.AddLogMaker(this);
             Reload();
         }
 

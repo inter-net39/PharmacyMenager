@@ -13,13 +13,13 @@ namespace Pharmacy
             PESEL = pesel;
             PrescriptionNumber = prescriptionNumber;
 
-            new LogHandler(this);
+            Program.Log.AddLogMaker(this);
 
         }
         public Prescription(int id)
         {
             ID = id;
-            new LogHandler(this);
+            Program.Log.AddLogMaker(this);
             Reload();
         }
 

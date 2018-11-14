@@ -1,16 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Pharmacy
 {
     internal class Program
     {
-        public static readonly string FILENAME = "Test.txt";
-        public static Prescription lastPrescription;
-        public static Medicine lastMedicine;
-        public static Order lastOrder;
-
+        public static readonly string LogFileName = "Test.txt";
+        public static Prescription LastPrescription;
+        public static Medicine LastMedicine;
+        public static Order LastOrder;
+        public static string ConnectionStringSettings = "../../../../settingsSQL.txt";
+        public static string ConnectionString = "";
+        public static LogHandler Log = new LogHandler();
         private static void Main(string[] args)
         {
             Raport raport = new Raport();
@@ -18,20 +19,26 @@ namespace Pharmacy
             try
             {
                 DeleteOldLogs();
+                GetConnectionString();
+
                 //DeleteAllOldDataInDB();
+
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine("Dostępne komendy:");
+                Console.WriteLine(@"Metody typu add przy podaniu ID = 0 dodają nowy rekord. W przypadku podania ID > 0 dane podane w poleceniu Add modyfikują dany rekord o podanym ID.");
+                Console.ForegroundColor = ConsoleColor.White;
+
 
                 string command = "";
                 do
                 {
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine("Dostępne komendy:");
-                    Console.WriteLine(@"Metody typu add przy podaniu ID = 0 dodają nowy rekord. W przypadku podania ID > 0 dane podane w poleceniu Add modyfikują dany rekord o podanym ID.");
                     Console.WriteLine(@"AddMedicine     [int id],[string name],[string manufacturer],[decimal price],[int amount],[bool withPrescription]");
                     Console.WriteLine(@"AddPrescription [int id],[string customerName],[string pesel],[int prescriptionNumber]");
                     Console.WriteLine(@"AddOrder        [int id],[Prescription prescriptionID],[Medicine medicineID],[string date],[int amount]");
                     Console.WriteLine(@"Remove Medicine/Prescription/Order");
-                    Console.WriteLine(@"Show Medicines/Prescriptions/Orders"); 
-                    Console.WriteLine(@"Select [Medicine/Prescription/Order] [int id]"); 
+                    Console.WriteLine(@"Show Medicines/Prescriptions/Orders/Sales");
+                    Console.WriteLine(@"Select [Medicine/Prescription/Order] [int id]");
                     Console.ForegroundColor = ConsoleColor.White;
 
                     command = Console.ReadLine();
@@ -44,15 +51,15 @@ namespace Pharmacy
                         {
                             string commandType = commandSplited[0];
                             string[] commandValues = commandSplited[1].Split(',');
-                            NewMethod(commandType, commandValues, lastPrescription, lastMedicine);
+                            AddCMD(commandType, commandValues, LastPrescription, LastMedicine);
                         }
                         else if (commandSplited[0] == "Show")
                         {
-                            NewMethod2(raport, commandSplited);
+                            ShowCMD(raport, commandSplited);
                         }
                         else if (commandSplited[0] == "Remove")
                         {
-                            NewMethod1(commandSplited);
+                            RemoveCMD(commandSplited);
                         }
                     }
                     else if (commandSplited.Length == 3)
@@ -73,22 +80,45 @@ namespace Pharmacy
             Console.ReadLine();
         }
 
+        private static void GetConnectionString()
+        {
+            if (File.Exists(ConnectionStringSettings))
+            {
+                using (StreamReader sr = new StreamReader(ConnectionStringSettings))
+                {
+                    ConnectionString = sr.ReadLine();
+                }
+                if (string.IsNullOrEmpty(ConnectionString))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Blad krytyczny odczytu ConnectionString");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("Connection string: " + ConnectionString);
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+            }
+        }
+
         private static void SelectCMD(string[] commandSplited)
         {
             var sID = Convert.ToInt32(commandSplited[2]);
-            if (commandSplited[0] == "Select" && sID != null)
+            if (commandSplited[0] == "Select" && sID != 0)
             {
                 if (commandSplited[1] == "Medicine")
                 {
-                    Program.lastMedicine = new Medicine(sID);
+                    Program.LastMedicine = new Medicine(sID);
                 }
                 else if (commandSplited[1] == "Prescription")
                 {
-                    Program.lastPrescription = new Prescription(sID);
+                    Program.LastPrescription = new Prescription(sID);
                 }
                 else if (commandSplited[1] == "Order")
                 {
-                    Program.lastOrder = new Order(sID);
+                    Program.LastOrder = new Order(sID);
                 }
                 else
                 {
@@ -101,7 +131,7 @@ namespace Pharmacy
             }
         }
 
-        private static void NewMethod2(Raport raport, string[] commandSplited)
+        private static void ShowCMD(Raport raport, string[] commandSplited)
         {
             if (commandSplited[1] == "Medicines")
             {
@@ -115,31 +145,35 @@ namespace Pharmacy
             {
                 raport.ShowPrescriptions();
             }
+            else if (commandSplited[1] == "Sales")
+            {
+                raport.Reload();
+            }
             else
             {
                 Console.WriteLine("Niepoprawna komenda.");
             }
         }
 
-        private static void NewMethod1(string[] commandSplited)
+        private static void RemoveCMD(string[] commandSplited)
         {
             if (commandSplited[1] == "Medicine")
             {
                 Console.WriteLine("Wprowadz ID do usunięcia, lub wpisz Yes aby usnąć wczesniej wybrany.");
                 string com = Console.ReadLine();
                 int val = Convert.ToInt32(com);
-                if (com.Contains("Yes") && lastMedicine != null)
+                if (com.Contains("Yes") && LastMedicine != null)
                 {
-                    lastMedicine.Remove();
-                    lastMedicine = null;
+                    LastMedicine.Remove();
+                    LastMedicine = null;
                 }
                 else if (val > 0)
                 {
-                    lastMedicine = new Medicine(val);
-                    if (lastMedicine != null)
+                    LastMedicine = new Medicine(val);
+                    if (LastMedicine != null)
                     {
-                        lastMedicine.Remove();
-                        lastMedicine = null;
+                        LastMedicine.Remove();
+                        LastMedicine = null;
                     }
                     else
                     {
@@ -156,18 +190,18 @@ namespace Pharmacy
                 Console.WriteLine("Wprowadz ID do usunięcia, lub wpisz Yes aby usnąć wczesniej wybrany.");
                 string com = Console.ReadLine();
                 int val = Convert.ToInt32(com);
-                if (com.Contains("Yes") && lastOrder != null)
+                if (com.Contains("Yes") && LastOrder != null)
                 {
-                    lastOrder.Remove();
-                    lastOrder = null;
+                    LastOrder.Remove();
+                    LastOrder = null;
                 }
                 else if (val > 0)
                 {
-                    lastOrder = new Order(val);
-                    if (lastOrder != null)
+                    LastOrder = new Order(val);
+                    if (LastOrder != null)
                     {
-                        lastOrder.Remove();
-                        lastOrder = null;
+                        LastOrder.Remove();
+                        LastOrder = null;
                     }
                     else
                     {
@@ -184,18 +218,18 @@ namespace Pharmacy
                 Console.WriteLine("Wprowadz ID do usunięcia, lub wpisz Yes aby usnąć wczesniej wybrany.");
                 string com = Console.ReadLine();
                 int val = Convert.ToInt32(com);
-                if (com.Contains("Yes") && lastPrescription != null)
+                if (com.Contains("Yes") && LastPrescription != null)
                 {
-                    lastPrescription.Remove();
-                    lastPrescription = null;
+                    LastPrescription.Remove();
+                    LastPrescription = null;
                 }
                 else if (val > 0)
                 {
-                    lastPrescription = new Prescription(val);
-                    if (lastPrescription != null)
+                    LastPrescription = new Prescription(val);
+                    if (LastPrescription != null)
                     {
-                        lastPrescription.Remove();
-                        lastPrescription = null;
+                        LastPrescription.Remove();
+                        LastPrescription = null;
                     }
                     else
                     {
@@ -213,7 +247,7 @@ namespace Pharmacy
             }
         }
 
-        private static void NewMethod(string commandType, string[] commandValues, Prescription lastPrescription, Medicine lastMedicine)
+        private static void AddCMD(string commandType, string[] commandValues, Prescription lastPrescription, Medicine lastMedicine)
         {
             if (commandType == "AddMedicine")
             {
@@ -227,16 +261,9 @@ namespace Pharmacy
                     int amount = Convert.ToInt32(commandValues[4]);
                     bool withPrescription = Convert.ToBoolean(commandValues[5]);
 
-                    if (id != null && name != null && manufacturer != null && price != null && amount != null && withPrescription != null)
-                    {
-                        Medicine myMedicine = new Medicine(id, name, manufacturer, price, amount, withPrescription);
-                        myMedicine.Save();
-                        Program.lastMedicine = myMedicine;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Argumenty nie pasują swoim typom");
-                    }
+                    Medicine myMedicine = new Medicine(id, name, manufacturer, price, amount, withPrescription);
+                    myMedicine.Save();
+                    Program.LastMedicine = myMedicine;
                 }
                 else
                 {
@@ -253,16 +280,9 @@ namespace Pharmacy
                     string pesel = Convert.ToString(commandValues[2]);
                     int prescriptionNumber = Convert.ToInt32(commandValues[3]);
 
-                    if (id != null && customerName != null && pesel != null && prescriptionNumber != null)
-                    {
-                        Prescription myPrescription = new Prescription(id, customerName, pesel, prescriptionNumber);
-                        myPrescription.Save();
-                        Program.lastPrescription = myPrescription;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Argumenty nie pasują swoim typom");
-                    }
+                    Prescription myPrescription = new Prescription(id, customerName, pesel, prescriptionNumber);
+                    myPrescription.Save();
+                    Program.LastPrescription = myPrescription;
                 }
                 else
                 {
@@ -279,29 +299,19 @@ namespace Pharmacy
                     int lastMedicineNumber = Convert.ToInt32(commandValues[2]);
                     if (lastPresciptionNumber != 0)
                     {
-                        Program.lastPrescription = new Prescription(lastPresciptionNumber);
+                        Program.LastPrescription = new Prescription(lastPresciptionNumber);
                     }
                     if (lastMedicineNumber != 0)
                     {
-                        Program.lastMedicine = new Medicine(lastMedicineNumber);
+                        Program.LastMedicine = new Medicine(lastMedicineNumber);
                     }
                     string date = Convert.ToString(commandValues[3]);
                     int amount = Convert.ToInt32(commandValues[4]);
-                    if (lastPrescription != null && lastMedicine != null)
+                    if (LastPrescription != null && LastMedicine != null)
                     {
-
-
-                        if (id != null && lastPrescription != null && lastMedicine != null && date != null &&
-                            amount != null)
-                        {
-                            Order myOrder = new Order(id, lastPrescription, lastMedicine, date, amount);
-                            myOrder.Save();
-                            Program.lastOrder = myOrder;
-                        }
-                        else
-                        {
-                            Console.WriteLine("Argumenty nie pasują swoim typom");
-                        }
+                        Order myOrder = new Order(id, LastPrescription, LastMedicine, date, amount);
+                        myOrder.Save();
+                        Program.LastOrder = myOrder;
                     }
                     else
                     {
@@ -323,9 +333,9 @@ namespace Pharmacy
 
         private static void DeleteOldLogs()
         {
-            if (File.Exists(FILENAME))
+            if (File.Exists(LogFileName))
             {
-                File.Delete(FILENAME);
+                File.Delete(LogFileName);
             }
         }
     }

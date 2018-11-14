@@ -6,25 +6,25 @@ namespace Pharmacy
 {
     public class Order : ActiveRecord
     {
-        private int _prescriptionID;
-        private int _medicineID;
+        private Prescription _prescription;
+        private Medicine _medicine;
         private string _date;
         private int _amount;
 
         public Order(int id, Prescription prescriptionObj, Medicine medicineObj, string date, int amount)
         {
-            _prescriptionID = prescriptionObj.ID;
-            _medicineID = medicineObj.ID;
+            _prescription = prescriptionObj;
+            _medicine = medicineObj;
             _date = date;
             _amount = amount;
             ID = id;
-            new LogHandler(this);
+            Program.Log.AddLogMaker(this);
         }
 
         public Order(int id)
         {
             ID = id;
-            new LogHandler(this);
+            Program.Log.AddLogMaker(this);
             Reload();
         }
         public override event Action<string> OnSuccesAction;
@@ -65,13 +65,13 @@ namespace Pharmacy
                 SqlParameter parameterPrescriptionID = new SqlParameter()
                 {
                     ParameterName = "@PrescriptionID",
-                    Value = _prescriptionID,
+                    Value = _prescription.ID,
                     DbType = DbType.Int32
                 };
                 SqlParameter parameterMedicineID = new SqlParameter()
                 {
                     ParameterName = "@MedicineID",
-                    Value = _medicineID,
+                    Value = _medicine.ID,
                     DbType = DbType.Int32
                 };
                 SqlParameter parameterDate = new SqlParameter()
@@ -137,13 +137,13 @@ namespace Pharmacy
             SqlParameter para1 = new SqlParameter()
             {
                 ParameterName = "@PrescriptionID",
-                Value = _prescriptionID,
+                Value = _prescription,
                 DbType = DbType.String
             };
             SqlParameter para2 = new SqlParameter()
             {
                 ParameterName = "@MedicineID",
-                Value = _medicineID,
+                Value = _medicine,
                 DbType = DbType.String
             };
             SqlParameter para3 = new SqlParameter()
@@ -215,8 +215,8 @@ namespace Pharmacy
                             if (sqlReader.FieldCount == 5)
                             {
                                 ID = Convert.ToInt32(sqlReader.GetValue(0));
-                                _prescriptionID = Convert.ToInt32(sqlReader.GetValue(1));
-                                _medicineID = Convert.ToInt32(sqlReader.GetValue(2));
+                                _prescription = new Prescription(Convert.ToInt32(sqlReader.GetValue(1)));
+                                _medicine = new Medicine(Convert.ToInt32(sqlReader.GetValue(2)));
                                 _date = Convert.ToString(sqlReader.GetValue(3));
                                 _amount = Convert.ToInt32(sqlReader.GetValue(4));
                             }

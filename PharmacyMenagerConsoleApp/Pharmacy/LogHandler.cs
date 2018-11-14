@@ -5,7 +5,7 @@ namespace Pharmacy
 {
     public class LogHandler
     {
-        public LogHandler(object sender)
+        public void AddLogMaker(Object sender)
         {
             try
             {
@@ -37,44 +37,46 @@ namespace Pharmacy
                     (sender as Raport).OnFailAction += AddLoggFail;
                     (sender as Raport).OnSuccesAction += AddLogSucces;
                 }
+                else if (sender is TableCleaner)
+                {
+                    (sender as TableCleaner).OnCloseAction += AddLogSucces;
+                    (sender as TableCleaner).OnCloseActionERR += AddLoggFail;
+                    (sender as TableCleaner).OnFailAction += AddLoggFail;
+                    (sender as TableCleaner).OnSuccesAction += AddLogSucces;
+                }
                 else
                 {
                     throw new Exception("Invalid Object Type.");
                 }
-
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message, e.StackTrace);
             }
         }
-
 
         private void AddLoggFail(string message)
         {
             try
             {
-                using (StreamWriter sw = new StreamWriter(Program.FILENAME, true))
+                using (StreamWriter sw = new StreamWriter(Program.LogFileName, true))
                 {
                     sw.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second} - Fail: {message}");
                 }
-
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second} - Fail: {message}");
                 Console.ForegroundColor = ConsoleColor.White;
-
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message, e.StackTrace);
             }
-
         }
         private void AddLogSucces(string message)
         {
             try
             {
-                using (StreamWriter sw = new StreamWriter(Program.FILENAME, true))
+                using (StreamWriter sw = new StreamWriter(Program.LogFileName, true))
                 {
                     sw.WriteLine($"{DateTime.Now.Hour}:{DateTime.Now.Minute}:{DateTime.Now.Second} - Succes: {message}");
                 }

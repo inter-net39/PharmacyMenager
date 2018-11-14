@@ -9,6 +9,10 @@ namespace Pharmacy
         public override event Action<string> OnSuccesAction;
         public override event Action<string> OnFailAction;
 
+        public TableCleaner()
+        {
+            Program.Log.AddLogMaker(this);
+        }
         public override void Save()
         {
             throw new NotImplementedException();
@@ -50,7 +54,6 @@ namespace Pharmacy
                 Connection = _connection,
                 Transaction = transaction
             };
-
             try
             {
                 cmd2.ExecuteNonQuery();
@@ -61,11 +64,10 @@ namespace Pharmacy
                 OnSuccesAction?.Invoke($"[TableCleaner] - Pomyślnie usunięto dane z [Medicines].");
                 OnSuccesAction?.Invoke($"[TableCleaner] - Pomyślnie usunięto dane z [Orders].");
                 OnSuccesAction?.Invoke($"[TableCleaner] - Pomyślnie usunięto dane z [Prescriptions].");
-
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                //Console.WriteLine(ex.Message, ex.StackTrace);
+                OnFailAction?.Invoke("[TableCleaner] - Nie udało się usunąć rekordów.");
                 transaction.Rollback();
             }
             finally

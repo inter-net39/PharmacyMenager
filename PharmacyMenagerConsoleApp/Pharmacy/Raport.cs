@@ -10,7 +10,7 @@ namespace Pharmacy
 
         public Raport()
         {
-            new LogHandler(this);
+            Program.Log.AddLogMaker(this);
         }
         public override void Save()
         {
@@ -58,12 +58,12 @@ namespace Pharmacy
             {
                 if (sqlReader.HasRows)
                 {
-                    OnSuccesAction.Invoke("|-ID-|----Name----|--Manufacturer--|--Price--|-Amount-|-With-Prescription-|");
+                    OnSuccesAction.Invoke("|-ID-|-------Name-------|--Manufacturer--|--Price--|-Amount-|-With-Prescription-|");
 
 
                     while (sqlReader.Read())
                     {
-                        OnSuccesAction.Invoke("|" + (sqlReader.GetValue(0) + "|").PadLeft(5) + (sqlReader.GetValue(1) + "|").PadLeft(13) +
+                        OnSuccesAction.Invoke("|" + (sqlReader.GetValue(0) + "|").PadLeft(5) + (sqlReader.GetValue(1) + "|").PadLeft(19) +
                                               (sqlReader.GetValue(2) + "|").PadLeft(17) + (sqlReader.GetValue(3) + "|").PadLeft(10) +
                                               (sqlReader.GetValue(4) + "|").PadLeft(9) + (sqlReader.GetValue(5) + "|").PadLeft(20)
                                               );

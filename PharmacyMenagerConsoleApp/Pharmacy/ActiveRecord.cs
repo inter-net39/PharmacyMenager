@@ -48,7 +48,7 @@ namespace Pharmacy
             {
                 _connection = new SqlConnection()
                 {
-                    ConnectionString = @"Data Source=(local)\SQLEXPRESS;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False",
+                    ConnectionString = @Program.ConnectionString,
                 };
                 _connection.Open();
                 OnCloseAction?.Invoke("Połączono z bazą danych");
