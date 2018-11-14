@@ -1,6 +1,6 @@
 # PharmacyMenager ADO.NET
 
-Aplikacja konsolowa nawiązująca połączenie z bazą danych i wykonywująca następujące operacje:
+Aplikacja konsolowa nawiązująca połączenie z bazą danych MS SQL i wykonywująca następujące operacje:
 
 -Dodawanie nowego rekordu
 
