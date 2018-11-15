@@ -9,8 +9,7 @@ namespace Pharmacy
         public static Prescription LastPrescription;
         public static Medicine LastMedicine;
         public static Order LastOrder;
-        public static string ConnectionStringSettings = "../../../../settingsSQL.txt";
-        public static string ConnectionString = "";
+
         public static LogHandler Log = new LogHandler();
         private static void Main(string[] args)
         {
@@ -19,7 +18,6 @@ namespace Pharmacy
             try
             {
                 DeleteOldLogs();
-                GetConnectionString();
 
                 //DeleteAllOldDataInDB();
 
@@ -80,28 +78,7 @@ namespace Pharmacy
             Console.ReadLine();
         }
 
-        private static void GetConnectionString()
-        {
-            if (File.Exists(ConnectionStringSettings))
-            {
-                using (StreamReader sr = new StreamReader(ConnectionStringSettings))
-                {
-                    ConnectionString = sr.ReadLine();
-                }
-                if (string.IsNullOrEmpty(ConnectionString))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Blad krytyczny odczytu ConnectionString");
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Connection string: " + ConnectionString);
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
-            }
-        }
+        
 
         private static void SelectCMD(string[] commandSplited)
         {

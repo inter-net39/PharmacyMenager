@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 
 namespace Pharmacy
 {
@@ -11,7 +12,8 @@ namespace Pharmacy
         public event Action<string> OnCloseActionERR;
         public abstract event Action<string> OnSuccesAction;
         public abstract event Action<string> OnFailAction;
-
+        private string _connectionStringSettings = "../../../../settingsSQL.txt";
+        private string _connectionString = "";
         public int ID { get; protected set; }
         /// <summary>
         /// Metoda Save w klasach dziedziczących po klasie
@@ -44,11 +46,16 @@ namespace Pharmacy
 
         protected void Open()
         {
+            if (_connectionString == "")
+            {
+                GetConnectionString();
+            }
+
             if (_connection == null)
             {
                 _connection = new SqlConnection()
                 {
-                    ConnectionString = @Program.ConnectionString,
+                    ConnectionString = _connectionString,
                 };
                 _connection.Open();
                 OnCloseAction?.Invoke("Połączono z bazą danych");
@@ -90,6 +97,22 @@ namespace Pharmacy
         /// wyjątek
         /// </summary>
         public abstract void Remove();
+        private void GetConnectionString()
+        {
+            if (File.Exists(_connectionStringSettings))
+            {
+                using (StreamReader sr = new StreamReader(_connectionStringSettings))
+                {
+                    _connectionString = sr.ReadLine();
+                }
+                if (string.IsNullOrEmpty(_connectionString))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Blad krytyczny odczytu ConnectionString.");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+            }
+        }
 
     }
 }
